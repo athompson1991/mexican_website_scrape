@@ -53,7 +53,7 @@ class OaxacaQuadratinSpider(scrapy.Spider):
             box1 = box_container.find_all("div", {"class": "box1"})[0]
             box2 = box_container.find_all("div", {"class": "box2"})[0]
             url = box2.find("a", href=True).get("href")
-            url_hash = hashlib.sha224(url.encode("utf-8"))
+            url_hash = hashlib.sha224(url.encode("utf-8")).hexdigest()
             out["url"] = url
             out["url_hash"] = url_hash
             out["headline"] = box1.find("h4").text
