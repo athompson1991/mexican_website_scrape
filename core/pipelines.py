@@ -27,6 +27,8 @@ class CSVPipeline(object):
     def __init__(self):
         self.time_format = "%Y-%m-%d_%H%M%S"
         self.seen = set()
+        self.file = None
+        self.writer = None
         self.filename = "default"
 
     def open_spider(self, spider):
