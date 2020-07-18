@@ -3,6 +3,7 @@ import hashlib
 import bs4
 
 from core.spiders.core_spiders import ListingsSpider
+from core.utils import url_hash
 
 
 class NssOaxacaListingsSpider(ListingsSpider):
@@ -39,17 +40,12 @@ class NssOaxacaListingsSpider(ListingsSpider):
         return self.url_stem + "/category/" + section + "/page/" + str(page)
 
     def parse(self, response):
-        soup = bs4.BeautifulSoup(response.text)
+        soup, out = super(NssOaxacaListingsSpider, self).parse(response)
         posts = soup.find_all("div", {"class": "infinite-post"})
-        out = {
-            "scraped_from": response.url,
-            "section": response.url.split("/")[4],
-            "publish_time": None,
-        }
+        out["section"] = response.url.split("/")[4]
         for post in posts:
             out["url"] = post.find("a").get("href")
             out["publish_date"] = "-".join(out["url"].split("/")[3:6])
-            out["url_hash"] = hashlib.sha224(out["url"].encode("utf-8")). \
-                    hexdigest()
+            out["url_hash"] = url_hash(out["url"])
             out["headline"] = post.find("h2").text
             yield out

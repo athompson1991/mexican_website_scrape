@@ -1,5 +1,6 @@
 import locale
 
+import bs4
 import scrapy
 
 from core import pipelines
@@ -34,4 +35,11 @@ class ListingsSpider(scrapy.Spider):
                 new_url = func(section, page)
                 self.urls.append(new_url)
 
-
+    def parse(self, response):
+        soup = bs4.BeautifulSoup(response.text)
+        out = {
+            "scraped_from": response.url,
+            "publish_time": None,
+            "publish_date": None
+        }
+        return soup, out

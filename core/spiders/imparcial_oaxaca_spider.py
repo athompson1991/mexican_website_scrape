@@ -4,9 +4,8 @@ import locale
 import bs4
 import scrapy
 
-from core import pipelines
 from core.spiders.core_spiders import ListingsSpider
-from core.utils import get_urls
+from core.utils import get_urls, url_hash
 
 
 class ImparcialOaxacaListingsSpider(ListingsSpider):
@@ -50,17 +49,15 @@ class ImparcialOaxacaListingsSpider(ListingsSpider):
     def parse_mason_jar(self, post, out):
         post_title = post.find("div", {"class": "post-title"})
         link = post_title.find("a")
+        out["url"] = link.get("href")
         out["headline"] = link.text
-        url = link.get("href")
-        out["url"] = url
-        out["url_hash"] = hashlib.sha224(url.encode("utf-8")).hexdigest()
+        out["url_hash"] = url_hash(out["url"])
         return out
 
     def parse(self, response):
-        out = {"scraped_from": response.url,
-               "section": response.url.split("/")[3], "publish_time": None,
-               "publish_date": None}
-        soup = bs4.BeautifulSoup(response.text)
+        soup, out = super(ImparcialOaxacaListingsSpider, self).parse(response)
+        section = response.url.split("/")[3]
+        out["section"] = section
         masonry_box = soup.find("div", {"class": "masonry-box"})
         article_box = soup.find("div", {"class": "article-box"})
         if masonry_box is not None:
@@ -74,8 +71,7 @@ class ImparcialOaxacaListingsSpider(ListingsSpider):
                 link = post.find("div", {"class": "post-content"}).find("a")
                 out["url"] = link.get("href")
                 out["headline"] = link.text
-                out["url_hash"] = hashlib.sha224(out["url"].encode("utf-8")). \
-                    hexdigest()
+                out["url_hash"] = url_hash(out["url"])
                 yield out
 
 

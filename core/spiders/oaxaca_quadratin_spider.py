@@ -18,10 +18,21 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
     def __init__(self):
         super().__init__()
         locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-        self.sections = ['principal', 'ciudad', 'regiones', 'comunicados',
-                         'politicas', 'gobierno', 'justicia', 'opinion',
-                         'cultura', 'deportes', 'Estados', 'entretenimiento',
-                         'versiones-estenograficas', ]
+        self.sections = [
+            'principal',
+            'ciudad',
+            'regiones',
+            'comunicados',
+            'politicas',
+            'gobierno',
+            'justicia',
+            'opinion',
+            'cultura',
+            'deportes',
+            'Estados',
+            'entretenimiento',
+            'versiones-estenograficas',
+        ]
         self.pages = [i for i in range(1, self.n)]
         self.urls = []
         for page in self.pages:
@@ -31,10 +42,12 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
 
     def parse(self, response):
         soup = bs4.BeautifulSoup(response.text)
+        out = {
+            "scraped_from": response.url,
+            "section": response.url.split("/")[3]
+        }
         divs = soup.find_all("div", {"class": "col-lg-6"})
         for div in divs:
-            out = {"scraped_from": response.url,
-                   "section": response.url.split("/")[3]}
             box_container = div.find_all("div", {"class": "box-container"})[0]
             box1 = box_container.find_all("div", {"class": "box1"})[0]
             box2 = box_container.find_all("div", {"class": "box2"})[0]
