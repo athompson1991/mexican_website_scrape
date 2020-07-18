@@ -2,13 +2,14 @@ import datetime
 import csv
 import functools
 import logging as log
+import json
 
 from scrapy.exceptions import DropItem
 
-from core.settings import OUTPUT_DIRECTORY
+from core.settings import DATA_DIRECTORY, ARTICLE_DIRECTORY
 
 
-def check_spider_pipeline(process_item_method):
+def check_spider_process_item(process_item_method):
     @functools.wraps(process_item_method)
     def wrapper(self, item, spider):
         msg = '%%s %s pipeline step' % (self.__class__.__name__,)
@@ -18,8 +19,27 @@ def check_spider_pipeline(process_item_method):
         else:
             spider.log(msg % 'skipping', level=log.DEBUG)
             return item
-
     return wrapper
+
+
+def check_spider_open_spider(open_spider_method):
+    @functools.wraps(open_spider_method)
+    def wrapper(self, spider):
+        if self.__class__ in spider.pipeline:
+            return open_spider_method(self, spider)
+        else:
+            spider.log("Skipping")
+    return wrapper
+
+def check_spider_close_spider(close_spider_method):
+    @functools.wraps(close_spider_method)
+    def wrapper(self, spider):
+        if self.__class__ in spider.pipeline:
+            return close_spider_method(self, spider)
+        else:
+            spider.log("Skipping")
+    return wrapper
+
 
 
 class CSVPipeline(object):
@@ -31,21 +51,22 @@ class CSVPipeline(object):
         self.writer = None
         self.filename = "default"
 
+    @check_spider_open_spider
     def open_spider(self, spider):
-        spider_name = spider.name
         now = datetime.datetime.now()
         now_str = now.strftime(self.time_format)
-        target_dir = OUTPUT_DIRECTORY + "/" + spider_name + "/"
-        self.filename = target_dir + spider_name + "_" + now_str + ".csv"
-        self.file = open(self.filename, 'w')
-        self.writer = csv.DictWriter(
-            self.file,
-            fieldnames=spider.colnames,
-            lineterminator='\n'
-        )
-        self.writer.writeheader()
+        target_dir = DATA_DIRECTORY + "/" + spider.name + "/"
+        if spider.colnames is not None:
+            self.filename = target_dir + spider.name + "_" + now_str + ".csv"
+            self.file = open(self.filename, 'w')
+            self.writer = csv.DictWriter(
+                self.file,
+                fieldnames=spider.colnames,
+                lineterminator='\n'
+            )
+            self.writer.writeheader()
 
-    @check_spider_pipeline
+    @check_spider_process_item
     def process_item(self, item, spider):
         item = dict(item)
         row = {col: item[col] for col in spider.colnames}
@@ -56,6 +77,26 @@ class CSVPipeline(object):
             self.writer.writerow(row)
             self.seen.add(dupe_check)
 
-    def close_spider(self):
+    @check_spider_close_spider
+    def close_spider(self, spider):
         print("Finished processing file: " + self.filename)
+        self.file.close()
+
+
+class ArticlePipeline(object):
+
+    def __init__(self):
+        self.time_format = "%Y-%m-%d_%H%M%S"
+        self.seen = set()
+        self.file = None
+        self.writer = None
+        self.filename = "default"
+
+    @check_spider_process_item
+    def process_item(self, item, spider):
+        target_dir = ARTICLE_DIRECTORY + "/" + spider.name + "/"
+        filename = target_dir + item["url_hash"] + ".txt"
+        self.file = open(filename, "w")
+        article = " ".join(item["paragraphs"])
+        self.file.write(article)
         self.file.close()
