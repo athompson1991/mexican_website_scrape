@@ -3,7 +3,7 @@ import hashlib
 
 import bs4
 
-from core.spiders.core_spiders import ListingsSpider
+from core.spiders.core_spiders import ListingsSpider, ArticleSpider
 from core.utils import url_hash
 
 
@@ -48,3 +48,14 @@ class InformadorListingsSpider(ListingsSpider):
             out["publish_time"] = dt.strftime("%H:%M")
             out["url_hash"] = url_hash(out["url"])
             yield out
+
+class InformadorArticleSpider(ArticleSpider):
+
+    name = 'informador_articles'
+
+    def parse(self, response):
+        soup, out = super().parse(response)
+        article = soup.find_all("article", {"class": "news"})[3]
+        out["headline"] = article.find("h1").text
+        out["paragraphs"] = [p.text for p in article.find_all("p")]
+        yield out

@@ -8,8 +8,9 @@ NEWSPIDER_MODULE = 'core.spiders'
 
 ITEM_PIPELINES = {
     'core.pipelines.CSVPipeline': 300,
-    'core.pipelines.ArticlePipeline': 400
+    'core.pipelines.ArticlePipeline': 400,
 }
 
 DATA_DIRECTORY = "data"
 ARTICLE_DIRECTORY = "articles"
+ARTICLE_JSON_DIRECTORY = "articles_json"

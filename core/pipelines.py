@@ -6,7 +6,8 @@ import json
 
 from scrapy.exceptions import DropItem
 
-from core.settings import DATA_DIRECTORY, ARTICLE_DIRECTORY
+from core.settings import DATA_DIRECTORY, ARTICLE_DIRECTORY, \
+    ARTICLE_JSON_DIRECTORY
 
 
 def check_spider_process_item(process_item_method):
@@ -22,26 +23,6 @@ def check_spider_process_item(process_item_method):
     return wrapper
 
 
-def check_spider_open_spider(open_spider_method):
-    @functools.wraps(open_spider_method)
-    def wrapper(self, spider):
-        if self.__class__ in spider.pipeline:
-            return open_spider_method(self, spider)
-        else:
-            spider.log("Skipping")
-    return wrapper
-
-def check_spider_close_spider(close_spider_method):
-    @functools.wraps(close_spider_method)
-    def wrapper(self, spider):
-        if self.__class__ in spider.pipeline:
-            return close_spider_method(self, spider)
-        else:
-            spider.log("Skipping")
-    return wrapper
-
-
-
 class CSVPipeline(object):
 
     def __init__(self):
@@ -51,7 +32,6 @@ class CSVPipeline(object):
         self.writer = None
         self.filename = "default"
 
-    @check_spider_open_spider
     def open_spider(self, spider):
         now = datetime.datetime.now()
         now_str = now.strftime(self.time_format)
@@ -77,7 +57,6 @@ class CSVPipeline(object):
             self.writer.writerow(row)
             self.seen.add(dupe_check)
 
-    @check_spider_close_spider
     def close_spider(self, spider):
         print("Finished processing file: " + self.filename)
         self.file.close()
@@ -92,6 +71,9 @@ class ArticlePipeline(object):
         self.writer = None
         self.filename = "default"
 
+    def open_spider(self, spider):
+        self.json_data = {}
+
     @check_spider_process_item
     def process_item(self, item, spider):
         target_dir = ARTICLE_DIRECTORY + "/" + spider.name + "/"
@@ -100,3 +82,13 @@ class ArticlePipeline(object):
         article = " ".join(item["paragraphs"])
         self.file.write(article)
         self.file.close()
+        self.json_data[item["url_hash"]] = item
+
+    def close_spider(self, spider):
+        now = datetime.datetime.now()
+        now_str = now.strftime(self.time_format)
+        json_dir = ARTICLE_JSON_DIRECTORY + "/" + spider.name + "/"
+        filename = json_dir + spider.name + "_" + now_str + ".json"
+        self.json_file = open(filename, "w")
+        json.dump(self.json_data, self.json_file, indent=2, ensure_ascii=False)
+        self.json_file.close()

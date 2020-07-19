@@ -2,7 +2,7 @@ import hashlib
 
 import bs4
 
-from core.spiders.core_spiders import ListingsSpider
+from core.spiders.core_spiders import ListingsSpider, ArticleSpider
 from core.utils import url_hash
 
 
@@ -45,7 +45,22 @@ class NssOaxacaListingsSpider(ListingsSpider):
         out["section"] = response.url.split("/")[4]
         for post in posts:
             out["url"] = post.find("a").get("href")
-            out["publish_date"] = "-".join(out["url"].split("/")[3:6])
             out["url_hash"] = url_hash(out["url"])
+            out["publish_date"] = "-".join(out["url"].split("/")[3:6])
             out["headline"] = post.find("h2").text
             yield out
+
+class NssOaxacaArticleSpider(ArticleSpider):
+
+    name = "nss_oaxaca_articles"
+
+    def parse(self, response):
+        soup, out = super().parse(response)
+        article = soup.find("article")
+        post_content = article.find("div", {"class": "post-content"})
+        paragraphs = post_content.find_all("p")
+        paragraphs = [p.text for p in paragraphs if p.text != '']
+        out["headline"] = article.find("h1").text
+        out["paragraphs"] = paragraphs
+        yield out
+

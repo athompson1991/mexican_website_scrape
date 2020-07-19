@@ -5,8 +5,8 @@ import locale
 import hashlib
 
 from core import pipelines
-from core.spiders.core_spiders import ListingsSpider
-from core.utils import get_urls
+from core.spiders.core_spiders import ListingsSpider, ArticleSpider
+from core.utils import get_urls, url_hash
 
 
 class OaxacaQuadratinListingsSpider(ListingsSpider):
@@ -41,6 +41,7 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
                 self.urls.append(new_url)
 
     def parse(self, response):
+
         soup = bs4.BeautifulSoup(response.text)
         out = {
             "scraped_from": response.url,
@@ -64,30 +65,17 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
             yield out
 
 
-class OaxacaQuadratinArticleSpider(scrapy.Spider):
+class OaxacaQuadratinArticleSpider(ArticleSpider):
 
-    pipeline = {pipelines.ArticlePipeline}
     name = 'oaxaca_quadratin_articles'
-    colnames = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-        self.urls = list(get_urls("hard_keyed_listing.csv"))[1:]
-        print("CREATED URLS: " + self.urls[0])
 
     def parse(self, response):
-        out = {}
-        soup = bs4.BeautifulSoup(response.text)
+        soup, out = super(OaxacaQuadratinArticleSpider, self).parse(response)
         article = soup.find("div", {"class": "post-content"})
-        ps = article.find_all("p")
-        paragraphs = [p.text for p in ps]
+        info = soup.find("div", {"class": "single-post-info"})
+        paragraphs = [p.text for p in article.find_all("p")]
         out["paragraphs"] = paragraphs
         out["url"] = response.url
-        hash = hashlib.sha224(response.url.encode("utf-8")).hexdigest()
-        out["url_hash"] = hash
+        out["url_hash"] = url_hash(response.url)
+        out["headline"] = info.find("h1").text.replace("\n", "").strip()
         yield out
-
-    def start_requests(self):
-        for url in self.urls:
-            yield scrapy.Request(url=url, callback=self.parse)
