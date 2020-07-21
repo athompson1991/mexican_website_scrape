@@ -28,3 +28,13 @@ def transfer_csvs(site, specific_file=None):
     destination = "listings_tables/" + site + ".csv"
     shutil.copyfile(raw_data_dir + target_file, destination)
     print("Copied over: " + target_file)
+
+def camel_case_split(str):
+    words = [[str[0]]]
+
+    for c in str[1:]:
+        if words[-1][-1].islower() and c.isupper():
+            words.append(list(c))
+        else:
+            words[-1].append(c)
+    return "_".join([''.join(word).lower() for word in words])

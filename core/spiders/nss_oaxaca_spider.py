@@ -1,36 +1,10 @@
-import hashlib
-
-import bs4
-
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
 from core.utils import url_hash
 
 
 class NssOaxacaListingsSpider(ListingsSpider):
-    n = 100
-    page_range = range(1, n)
     name = "nss_oaxaca_listings"
     url_stem = "https://www.nssoaxaca.com/"
-    sections = [
-        "estado",
-        "municipios",
-        "ciudad",
-        "politica",
-        "deportes",
-        "turismo",
-        "justicia",
-        "nacional",
-        "policiaca",
-        "culturas",
-        "sociales",
-        "educacion",
-        "economia",
-        "ciencia-y-tecnologia",
-        "entretenimiento",
-        "salud",
-        "them",
-        "mundo"
-    ]
 
     def __init__(self):
         super().__init__()
@@ -50,8 +24,8 @@ class NssOaxacaListingsSpider(ListingsSpider):
             out["headline"] = post.find("h2").text
             yield out
 
-class NssOaxacaArticleSpider(ArticleSpider):
 
+class NssOaxacaArticleSpider(ArticleSpider):
     name = "nss_oaxaca_articles"
 
     def parse(self, response):
@@ -63,4 +37,3 @@ class NssOaxacaArticleSpider(ArticleSpider):
         out["headline"] = article.find("h1").text
         out["paragraphs"] = paragraphs
         yield out
-

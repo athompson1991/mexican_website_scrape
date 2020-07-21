@@ -1,46 +1,13 @@
-import hashlib
-import locale
-
-import bs4
-import scrapy
-
-from core.spiders.core_spiders import ListingsSpider
-from core.utils import get_urls, url_hash
+from core.spiders.core_spiders import ListingsSpider, ArticleSpider
+from core.utils import url_hash
 
 
 class ImparcialOaxacaListingsSpider(ListingsSpider):
-    n = 100
-
     name = "imparcial_oaxaca_listings"
     url_stem = "https://imparcialoaxaca.mx/"
-    sections = [
-        'nacional',
-        'internacional',
-        'ecologia',
-        'economia',
-        'salud',
-        'viral',
-        'arte-y-cultura',
-        'en-escena'
-        'tecnologia',
-        'ciencia',
-        'policiaca',
-        'super-deportivo',
-        'especiales',
-        'oaxaca',
-        'caniada',
-        'costa',
-        'cuenca',
-        'istmo',
-        'mixteca',
-        'sierra-norte',
-        'sierra-sur',
-        'valles-centrales'
-    ]
 
     def __init__(self):
         super().__init__()
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
         self.create_urls(self.url_gen, self.sections, list(range(1, self.n)))
 
     def url_gen(self, section, page):
@@ -75,28 +42,15 @@ class ImparcialOaxacaListingsSpider(ListingsSpider):
                 yield out
 
 
-class ImparcialOaxacaArticleSpider(scrapy.Spider):
+class ImparcialOaxacaArticleSpider(ArticleSpider):
     name = 'imparcial_oaxaca_articles'
-    colnames = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-        self.urls = list(get_urls("hard_keyed_listing_io.csv"))[1:]
-        print("CREATED URLS: " + self.urls[0])
 
     def parse(self, response):
-        out = {}
-        soup = bs4.BeautifulSoup(response.text)
+        soup, out = super().parse(response)
         content = soup.find(id="content")
         paragraphs = content.find_all("p")
         paragraphs = [p.text for p in paragraphs]
         out["paragraphs"] = paragraphs
         out["url"] = response.url
-        hash = hashlib.sha224(response.url.encode("utf-8")).hexdigest()
-        out["url_hash"] = hash
+        out["url_hash"] = url_hash(out["url"])
         yield out
-
-    def start_requests(self):
-        for url in self.urls:
-            yield scrapy.Request(url=url, callback=self.parse)

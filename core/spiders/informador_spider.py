@@ -1,32 +1,16 @@
 import datetime
-import hashlib
-
-import bs4
 
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
 from core.utils import url_hash
 
 
 class InformadorListingsSpider(ListingsSpider):
-    n = 100
-    page_range = list(range(1, n))
     name = "informador_listings"
     url_stem = "https://www.informador.mx"
-    sections = [
-        "jalisco",
-        "mexico",
-        "internacional",
-        "deportes",
-        "entretenimiento",
-        "economia",
-        "tecnologia",
-        "ideas",
-        "cultura"
-    ]
 
     def __init__(self):
         super().__init__()
-        self.create_urls(self.url_gen, self.sections, list(self.page_range))
+        self.create_urls(self.url_gen, self.sections, self.page_range)
 
     def url_gen(self, section, page):
         xref = "/ajax/get_section_news.html?"
@@ -49,8 +33,8 @@ class InformadorListingsSpider(ListingsSpider):
             out["url_hash"] = url_hash(out["url"])
             yield out
 
-class InformadorArticleSpider(ArticleSpider):
 
+class InformadorArticleSpider(ArticleSpider):
     name = 'informador_articles'
 
     def parse(self, response):

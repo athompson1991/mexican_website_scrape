@@ -4,7 +4,8 @@ import bs4
 import scrapy
 
 from core import pipelines
-from core.utils import get_urls, url_hash
+from core.sections import listings_sections
+from core.utils import get_urls, url_hash, camel_case_split
 
 
 class PrimarySpider(scrapy.Spider):
@@ -22,6 +23,8 @@ class PrimarySpider(scrapy.Spider):
 
 
 class ListingsSpider(PrimarySpider):
+    n = 100
+    page_range = list(range(1, n))
 
     pipeline = {pipelines.CSVPipeline}
     colnames = [
@@ -33,6 +36,10 @@ class ListingsSpider(PrimarySpider):
         "publish_time",
         "publish_date"
     ]
+
+    def __init__(self):
+        super(ListingsSpider, self).__init__()
+        self.sections = listings_sections[self.name[:-9]]
 
     def create_urls(self, func, sections, pages):
         self.urls = []

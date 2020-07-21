@@ -1,52 +1,24 @@
-import bs4
-import scrapy
 import datetime
-import locale
 import hashlib
 
-from core import pipelines
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
-from core.utils import get_urls, url_hash
+from core.utils import url_hash
 
 
 class OaxacaQuadratinListingsSpider(ListingsSpider):
-
-    n = 100
     name = 'oaxaca_quadratin_listings'
     url_stem = 'https://oaxaca.quadratin.com.mx/'
 
     def __init__(self):
         super().__init__()
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-        self.sections = [
-            'principal',
-            'ciudad',
-            'regiones',
-            'comunicados',
-            'politicas',
-            'gobierno',
-            'justicia',
-            'opinion',
-            'cultura',
-            'deportes',
-            'Estados',
-            'entretenimiento',
-            'versiones-estenograficas',
-        ]
-        self.pages = [i for i in range(1, self.n)]
-        self.urls = []
-        for page in self.pages:
-            for section in self.sections:
-                new_url = self.url_stem + section + '/page/' + str(page) + '/'
-                self.urls.append(new_url)
+        self.create_urls(self.url_gen, self.sections, self.page_range)
+
+    def url_gen(self, section, page):
+        return self.url_stem + section + '/page/' + str(page) + '/'
 
     def parse(self, response):
-
-        soup = bs4.BeautifulSoup(response.text)
-        out = {
-            "scraped_from": response.url,
-            "section": response.url.split("/")[3]
-        }
+        soup, out = super(OaxacaQuadratinListingsSpider, self).parse(response)
+        out["section"] = response.url.split("/")[3]
         divs = soup.find_all("div", {"class": "col-lg-6"})
         for div in divs:
             box_container = div.find_all("div", {"class": "box-container"})[0]
@@ -66,7 +38,6 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
 
 
 class OaxacaQuadratinArticleSpider(ArticleSpider):
-
     name = 'oaxaca_quadratin_articles'
 
     def parse(self, response):
