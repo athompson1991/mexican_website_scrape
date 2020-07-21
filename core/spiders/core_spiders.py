@@ -7,7 +7,21 @@ from core import pipelines
 from core.utils import get_urls, url_hash
 
 
-class ListingsSpider(scrapy.Spider):
+class PrimarySpider(scrapy.Spider):
+
+    def __init__(self):
+        super().__init__()
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+        self.urls = []
+
+    def start_requests(self):
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:48.0) '
+                                 'Gecko/20100101 Firefox/48.0'}
+        for url in self.urls:
+            yield scrapy.Request(url=url, callback=self.parse, headers=headers)
+
+
+class ListingsSpider(PrimarySpider):
 
     pipeline = {pipelines.CSVPipeline}
     colnames = [
@@ -19,15 +33,6 @@ class ListingsSpider(scrapy.Spider):
         "publish_time",
         "publish_date"
     ]
-
-    def __init__(self):
-        super().__init__()
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-        self.urls = []
-
-    def start_requests(self):
-        for url in self.urls:
-            yield scrapy.Request(url=url, callback=self.parse)
 
     def create_urls(self, func, sections, pages):
         self.urls = []
@@ -46,27 +51,27 @@ class ListingsSpider(scrapy.Spider):
         return soup, out
 
 
-class ArticleSpider(scrapy.Spider):
+class ArticleSpider(PrimarySpider):
 
     pipeline = {pipelines.ArticlePipeline}
     colnames = None
 
     def __init__(self):
         super().__init__()
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
         self.assign_urls()
-
-    def start_requests(self):
-        for url in self.urls:
-            yield scrapy.Request(url=url, callback=self.parse)
 
     def assign_urls(self):
         file = "listings_tables/" + self.name[:-9] + ".csv"
         self.urls = list(get_urls(file))[1:]
 
     def parse(self, response):
-        out = {"url": response.url, "url_hash": None, "headline": None,
-               "paragraphs": None, "author": None}
+        out = {
+            "url": response.url,
+            "url_hash": None,
+            "headline": None,
+            "paragraphs": None,
+            "author": None
+        }
         out["url_hash"] = url_hash(out["url"])
         soup = bs4.BeautifulSoup(response.text)
         return soup, out
