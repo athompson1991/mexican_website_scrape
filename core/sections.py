@@ -91,6 +91,9 @@ listings_sections = {
         "estado-politica",
         "estado-deportes",
         "estado-farandula",
-        "estado-policiaca"
+        "estado-policiaca",
+        "costa-general",
+        "istma-general",
+        "mixteca-general"
     ]
 }

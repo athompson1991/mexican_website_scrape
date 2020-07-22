@@ -14,8 +14,11 @@ class RioOaxacaListingsSpider(ListingsSpider):
         self.create_urls(self.url_gen, self.sections, list(self.page_range))
 
     def url_gen(self, section, page):
-        return self.url_stem + "/category/" + section + \
-               "/page/" + str(page) + "/"
+        main = self.url_stem + "/category/"
+        if section.split("-")[1] == "general":
+            return main + "regiones/" + section + "/page/" + str(page) + "/"
+        else:
+            return main + section + "/page/" + str(page) + "/"
 
     def parse(self, response):
         soup, out = super().parse(response)
