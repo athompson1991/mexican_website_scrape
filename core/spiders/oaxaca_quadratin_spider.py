@@ -28,7 +28,7 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
             url_hash = hashlib.sha224(url.encode("utf-8")).hexdigest()
             out["url"] = url
             out["url_hash"] = url_hash
-            out["headline"] = box1.find("h4").text
+            out["headline"] = box1.find("h4").text.strip()
             timestamp = box1.find("div", {"class": "date-hour"}).text
             timestamp = timestamp.replace("\n", "").strip()
             d = datetime.datetime.strptime(timestamp, "%H:%M %d %b %Y")
@@ -46,7 +46,5 @@ class OaxacaQuadratinArticleSpider(ArticleSpider):
         info = soup.find("div", {"class": "single-post-info"})
         paragraphs = [p.text for p in article.find_all("p")]
         out["paragraphs"] = paragraphs
-        out["url"] = response.url
-        out["url_hash"] = url_hash(response.url)
         out["headline"] = info.find("h1").text.replace("\n", "").strip()
         yield out

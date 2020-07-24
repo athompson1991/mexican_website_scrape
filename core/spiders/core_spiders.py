@@ -14,6 +14,8 @@ class PrimarySpider(scrapy.Spider):
         super().__init__()
         locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
         self.urls = []
+        self.class_name = type(self).__name__
+        print("Created spider: " + self.class_name)
 
     def start_requests(self):
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:48.0) '
