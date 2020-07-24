@@ -29,10 +29,10 @@ def transfer_csvs(site, specific_file=None):
     shutil.copyfile(raw_data_dir + target_file, destination)
     print("Copied over: " + target_file)
 
-def camel_case_split(str):
-    words = [[str[0]]]
 
-    for c in str[1:]:
+def camel_case_split(string):
+    words = [[string[0]]]
+    for c in string[1:]:
         if words[-1][-1].islower() and c.isupper():
             words.append(list(c))
         else:

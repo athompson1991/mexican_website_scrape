@@ -8,7 +8,6 @@ class RioOaxacaListingsSpider(ListingsSpider):
     name = "rio_oaxaca_listings"
     url_stem = "https://www.rioaxaca.com"
 
-
     def __init__(self):
         super().__init__()
         self.create_urls(self.url_gen, self.sections, list(self.page_range))
@@ -37,6 +36,14 @@ class RioOaxacaListingsSpider(ListingsSpider):
 
 
 class RioOaxacaArticleSpider(ArticleSpider):
+    name = "rio_oaxaca_articles"
 
     def parse(self, response):
-        pass
+        soup, out = super(RioOaxacaArticleSpider, self).parse(response)
+        post_content = soup.find("div", {"class": "td-post-content"})
+        paragraphs = post_content.find_all("p")
+        paragraphs = [p.text for p in paragraphs]
+        out["paragraphs"] = paragraphs
+        header = soup.find("header", {"class": "td-post-title"})
+        out["headline"] = header.find("h1").text
+        yield out
