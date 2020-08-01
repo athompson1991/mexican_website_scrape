@@ -1,7 +1,6 @@
 import datetime
 
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
-from core.utils import url_hash
 
 
 class InformadorListingsSpider(ListingsSpider):
@@ -30,7 +29,7 @@ class InformadorListingsSpider(ListingsSpider):
             dt = datetime.datetime.strptime(dt_str, "%Y-%d-%mT%H:%M")
             out["publish_date"] = dt.strftime("%Y-%m-%d")
             out["publish_time"] = dt.strftime("%H:%M")
-            out["url_hash"] = url_hash(out["url"])
+            out["url_hash"] = self.url_hash(out["url"])
             yield out
 
 

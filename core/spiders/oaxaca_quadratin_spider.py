@@ -2,7 +2,6 @@ import datetime
 import hashlib
 
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
-from core.utils import url_hash
 
 
 class OaxacaQuadratinListingsSpider(ListingsSpider):
@@ -24,10 +23,8 @@ class OaxacaQuadratinListingsSpider(ListingsSpider):
             box_container = div.find_all("div", {"class": "box-container"})[0]
             box1 = box_container.find_all("div", {"class": "box1"})[0]
             box2 = box_container.find_all("div", {"class": "box2"})[0]
-            url = box2.find("a", href=True).get("href")
-            url_hash = hashlib.sha224(url.encode("utf-8")).hexdigest()
-            out["url"] = url
-            out["url_hash"] = url_hash
+            out["url"] = box2.find("a", href=True).get("href")
+            out["url_hash"] = self.url_hash(out["url"])
             out["headline"] = box1.find("h4").text.strip()
             timestamp = box1.find("div", {"class": "date-hour"}).text
             timestamp = timestamp.replace("\n", "").strip()

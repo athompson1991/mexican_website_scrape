@@ -1,5 +1,4 @@
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
-from core.utils import url_hash
 
 
 class NssOaxacaListingsSpider(ListingsSpider):
@@ -19,7 +18,7 @@ class NssOaxacaListingsSpider(ListingsSpider):
         out["section"] = response.url.split("/")[4]
         for post in posts:
             out["url"] = post.find("a").get("href")
-            out["url_hash"] = url_hash(out["url"])
+            out["url_hash"] = self.url_hash(out["url"])
             out["publish_date"] = "-".join(out["url"].split("/")[3:6])
             out["headline"] = post.find("h2").text
             yield out

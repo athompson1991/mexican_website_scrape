@@ -1,5 +1,4 @@
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
-from core.utils import url_hash
 
 
 class OaxacaUniversalListingsSpider(ListingsSpider):
@@ -24,7 +23,7 @@ class OaxacaUniversalListingsSpider(ListingsSpider):
             out["headline"] = div.text.strip()
             div = view.find("div", {"class": "views-field-created"})
             out["publish_date"] = div.text.strip()
-            out["url_hash"] = url_hash(out["url"])
+            out["url_hash"] = self.url_hash(out["url"])
             yield out
 
 

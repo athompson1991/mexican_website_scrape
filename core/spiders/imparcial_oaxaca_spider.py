@@ -1,5 +1,4 @@
 from core.spiders.core_spiders import ListingsSpider, ArticleSpider
-from core.utils import url_hash
 
 
 class ImparcialOaxacaListingsSpider(ListingsSpider):
@@ -18,7 +17,7 @@ class ImparcialOaxacaListingsSpider(ListingsSpider):
         link = post_title.find("a")
         out["url"] = link.get("href")
         out["headline"] = link.text
-        out["url_hash"] = url_hash(out["url"])
+        out["url_hash"] = self.url_hash(out["url"])
         return out
 
     def parse(self, response):
@@ -38,7 +37,7 @@ class ImparcialOaxacaListingsSpider(ListingsSpider):
                 link = post.find("div", {"class": "post-content"}).find("a")
                 out["url"] = link.get("href")
                 out["headline"] = link.text
-                out["url_hash"] = url_hash(out["url"])
+                out["url_hash"] = self.url_hash(out["url"])
                 yield out
 
 
@@ -52,5 +51,4 @@ class ImparcialOaxacaArticleSpider(ArticleSpider):
         paragraphs = [p.text for p in paragraphs]
         out["paragraphs"] = paragraphs
         out["url"] = response.url
-        out["url_hash"] = url_hash(out["url"])
         yield out

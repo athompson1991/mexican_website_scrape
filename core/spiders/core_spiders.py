@@ -1,3 +1,4 @@
+import hashlib
 import locale
 
 import bs4
@@ -17,11 +18,17 @@ class PrimarySpider(scrapy.Spider):
         self.class_name = type(self).__name__
         print("Created spider: " + self.class_name)
 
+    def url_hash(self, url):
+        hasher = hashlib.sha3_224(url.encode("utf-8"))
+        return hasher.hexdigest()[:15]
+
     def start_requests(self):
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:48.0) '
                                  'Gecko/20100101 Firefox/48.0'}
         for url in self.urls:
             yield scrapy.Request(url=url, callback=self.parse, headers=headers)
+
+
 
 
 class ListingsSpider(PrimarySpider):
@@ -32,6 +39,7 @@ class ListingsSpider(PrimarySpider):
     colnames = [
         "url",
         "url_hash",
+        "site",
         "scraped_from",
         "section",
         "headline",
@@ -54,6 +62,7 @@ class ListingsSpider(PrimarySpider):
         soup = bs4.BeautifulSoup(response.text)
         out = {
             "scraped_from": response.url,
+            "site": self.name[:-9],
             "publish_time": None,
             "publish_date": None
         }
