@@ -29,8 +29,6 @@ class PrimarySpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse, headers=headers)
 
 
-
-
 class ListingsSpider(PrimarySpider):
     n = 100
     page_range = list(range(1, n))
@@ -90,6 +88,6 @@ class ArticleSpider(PrimarySpider):
             "paragraphs": None,
             "author": None
         }
-        out["url_hash"] = url_hash(out["url"])
+        out["url_hash"] = self.url_hash(out["url"])
         soup = bs4.BeautifulSoup(response.text)
         return soup, out

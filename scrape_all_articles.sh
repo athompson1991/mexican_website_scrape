@@ -1,0 +1,6 @@
+scrapy crawl imparcial_oaxaca_articles
+scrapy crawl informador_articles
+scrapy crawl nss_oaxaca_articles
+scrapy crawl oaxaca_quadratin_articles
+scrapy crawl oaxaca_universal_articles
+scrapy crawl rio_oaxaca_articles
